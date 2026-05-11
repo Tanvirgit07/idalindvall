@@ -16,13 +16,13 @@ export default function ProgressBar({
   const filledStepCount = (safeProgress / 100) * totalSteps;
 
   return (
-    <div className="w-full px-2 pb-3 pt-2">
-      <div className="mb-2 flex items-center justify-between">
-        <p className="text-[20px] font-medium text-[#9b5948]">
+    <div className="w-full px-2 pb-4 pt-4">
+      <div className="mb-3 flex items-center justify-between">
+        <p className="text-[15px] font-semibold leading-none text-[#8B4A3A]">
           Step {safeStep} of {totalSteps} - {id.toUpperCase()}
         </p>
 
-        <p className="text-[14px] font-medium text-[#8B4A3A] leading-[100%]">
+        <p className="rounded-full bg-[#F3EEE8] px-3 py-1 text-[13px] font-semibold leading-none text-[#8B4A3A]">
           {safeProgress}%
         </p>
       </div>
@@ -40,9 +40,9 @@ export default function ProgressBar({
           ) * 100;
 
           return (
-            <div key={index} className="h-2 rounded-full bg-[#e3ddd5]">
+            <div key={index} className="h-2.5 overflow-hidden rounded-full bg-[#C8C2BB]">
               <div
-                className="h-full rounded-full bg-[#d2b4aa] transition-all duration-500"
+                className="h-full rounded-full bg-[#8B4A3A] transition-all duration-500"
                 style={{ width: `${fillWidth}%` }}
               />
             </div>

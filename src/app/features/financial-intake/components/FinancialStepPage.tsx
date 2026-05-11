@@ -74,7 +74,6 @@ export default function FinancialStepPage({ data }: Props) {
     },
   ]);
 
-  const currentQuestion = data.questions[0];
   const totalSectionSteps = sectionStepCounts[data.financialSection];
   const progressStep = Math.min(
     Math.max(Math.ceil((progress / 100) * totalSectionSteps), 1),
@@ -100,15 +99,19 @@ export default function FinancialStepPage({ data }: Props) {
     setIsSending(true);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/financial_section/chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/financial_section/chat`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
         },
-        body: JSON.stringify(requestBody),
-      });
+      );
 
-      const responseData = (await response.json()) as FinancialIntakeChatResponse;
+      const responseData =
+        (await response.json()) as FinancialIntakeChatResponse;
 
       if (!response.ok || !responseData.status) {
         throw new Error("Financial intake API request failed.");
@@ -179,50 +182,41 @@ export default function FinancialStepPage({ data }: Props) {
   }, [messages]);
 
   return (
-    <main className="h-screen overflow-hidden bg-[#777675] px-4 py-8">
+    <main className="h-screen overflow-hidden bg-[#EAE5DF] px-4 py-8">
       <section className="relative mx-auto flex h-[calc(100vh-64px)] w-full max-w-5xl flex-col overflow-hidden bg-[#f3eee8] shadow-sm">
         {isGeneratingBudget && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#f3eee8]/90 text-[#8B4A3A]">
             <Loader2 className="mb-3 animate-spin" size={34} />
-            <p className="text-base font-medium">Generating your budget file...</p>
+            <p className="text-base font-medium">
+              Generating your budget file...
+            </p>
           </div>
         )}
 
-        <div className="flex items-start justify-between px-6 pt-5">
-          <div>
-            <p className="text-base font-medium uppercase leading-[100%] text-[#8B4A3A]">
-              THE FREEDOM BUDGET METHOD <sup>TM</sup>
-            </p>
+        <div className="bg-[#DDD7D0]">
+          <div className="flex items-start justify-between px-6 pt-5 ">
+            <div>
+              <p className="text-base font-medium uppercase leading-[100%] text-[#8B4A3A]">
+                THE FREEDOM BUDGET METHOD <sup>TM</sup>
+              </p>
 
-            <h1 className="mt-2 text-[40px] font-bold text-[#2C2C2C] leading-[100%]">
-              Financial Intake
-            </h1>
-            <p className="text-[#999999] text-base leading-[100%] font-normal mt-2">
-              A guided conversation - one question at a time
-            </p>
+              <h1 className="mt-2 text-[40px] font-bold text-[#2C2C2C] leading-[100%]">
+                Financial Intake
+              </h1>
+              <p className="text-[#686560] text-[13px] leading-[100%] font-light mt-2">
+                A guided conversation - one question at a time
+              </p>
+            </div>
           </div>
 
-          {/* <div className="flex gap-2">
-            <button
-              onClick={() => router.push(data.nextPath)}
-              className="bg-[#9b5948] w-24.75 h-12.75 text-base text-white hover:bg-[#874b3d]"
-            >
-              Next
-            </button>
-
-            <button className="border w-24.75 h-12.75 border-[#d8ccc3] px-4 py-1.5 text-base text-[#9b5948]">
-              Exit
-            </button>
-          </div> */}
-        </div>
-
-        <div className="px-4">
-          <ProgressBar
-            step={progressStep}
-            id={data.pageTitle}
-            progress={progress}
-            totalSteps={totalSectionSteps}
-          />
+          <div className="px-4">
+            <ProgressBar
+              step={progressStep}
+              id={data.pageTitle}
+              progress={progress}
+              totalSteps={totalSectionSteps}
+            />
+          </div>
         </div>
 
         <ScrollArea className="min-h-0 flex-1 px-6 py-6">
@@ -294,23 +288,21 @@ export default function FinancialStepPage({ data }: Props) {
                 if (e.key === "Enter") handleSend();
               }}
               disabled={isSending}
-              placeholder={
-                currentQuestion?.placeholder ?? "Type your answer here"
-              }
-              className="h-10 flex-1 border border-[#d6c8bc] bg-[#fbf8f5] px-4 text-base text-[#4b342d] outline-none placeholder:text-[#b9a89c] focus:border-[#9b5948]"
+              placeholder="Type your answer here..."
+              className="h-10 flex-1 rounded-[10px] border border-[#C8C2BB] bg-[#FFFFFF] px-3.5 py-2.5 text-[14px] font-normal text-[#2C2C2C] placeholder:text-[#b9a89c] outline-none focus:border-[#8B4A3A]"
             />
 
             <button
               onClick={handleSend}
               disabled={isSending}
-              className="flex h-10 w-10 items-center justify-center bg-[#9b5948] text-white hover:bg-[#874b3d]"
+              className="h-10.5 rounded-[10px] bg-[#8B4A3A] px-4.5 py-2.5 text-[13px] font-bold text-white hover:bg-[#7A3F30] transition-colors"
             >
               <Send size={15} />
             </button>
           </div>
         </div>
 
-        <p className="pb-2 text-center text-[10px] text-[#a15b48]">
+        <p className="pb-2 text-center text-[10px] font-light italic text-[#9B918A]">
           Structure below kicks — the FREEDOM BUDGET METHOD™ — UFYALL.COM
         </p>
       </section>
