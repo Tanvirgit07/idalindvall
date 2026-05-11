@@ -4,6 +4,7 @@ import type { FinancialStepData } from "../types/financialIntake.types";
 export const step5Data: FinancialStepData = {
   pageStep: 5,
   pageTitle: "Net Position",
+  financialSection: "net_position",
   progress: 90,
   nextPath: FINANCIAL_INTAKE_ROUTES.complete,
 
@@ -11,7 +12,7 @@ export const step5Data: FinancialStepData = {
     {
       id: "net-1",
       question:
-        "Now let’s calculate your net position. How much cash or savings do you currently have?",
+        "Welcome! I'm here to help you build your Freedom Budget. Let's start with your income what's your net monthly income after tax?",
       placeholder: "Example: savings 100000",
     },
 

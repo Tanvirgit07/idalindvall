@@ -4,6 +4,7 @@ import type { FinancialStepData } from "../types/financialIntake.types";
 export const step4Data: FinancialStepData = {
   pageStep: 4,
   pageTitle: "Irregular Expenses",
+  financialSection: "irregular_expense",
   progress: 65,
   nextPath: FINANCIAL_INTAKE_ROUTES.step5,
 
@@ -11,7 +12,7 @@ export const step4Data: FinancialStepData = {
     {
       id: "irregular-1",
       question:
-        "Now let’s add irregular expenses. Do you have yearly vehicle maintenance costs?",
+        "Welcome! I'm here to help you build your Freedom Budget. Let's start with your income what's your net monthly income after tax?",
       placeholder: "Example: yearly service 12000",
     },
 

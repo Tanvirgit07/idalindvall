@@ -68,7 +68,7 @@ export default function FinancialIntakeShell() {
         <div className="px-6">
           <ProgressBar
             step={currentStep + 1}
-            title={steps[currentStep].title}
+            id={steps[currentStep].title}
             progress={steps[currentStep].progress}
             totalSteps={6}
           />

@@ -1,11 +1,22 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Copy, PencilLine, Send } from "lucide-react";
+import { Copy, Loader2, PencilLine, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type { FinancialStepData } from "../types/financialIntake.types";
+import type {
+  BudgetMethodResponse,
+  ChatHistoryItem,
+  FinancialIntakeChatRequest,
+  FinancialIntakeChatResponse,
+  FinancialStepData,
+} from "../types/financialIntake.types";
 import ProgressBar from "./ProgressBar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  getFinancialIntakeData,
+  saveBudgetFileUrl,
+  saveFinancialSectionData,
+} from "../utils/financialIntakeStorage";
 
 type ChatMessage = {
   id: string;
@@ -17,20 +28,43 @@ type Props = {
   data: FinancialStepData;
 };
 
-const steps = [
-  { title: "Income", progress: 16 },
-  { title: "Essentials", progress: 32 },
-  { title: "Committed Money", progress: 50 },
-  { title: "Irregular Expenses", progress: 66 },
-  { title: "Net Position", progress: 83 },
-  { title: "Complete", progress: 100 },
-];
+const sectionStepCounts = {
+  income: 3,
+  essentials: 11,
+  committed_money: 3,
+  irregular_expense: 2,
+  net_position: 10,
+};
+
+function buildChatHistory(messages: ChatMessage[]): ChatHistoryItem[] {
+  const chatHistory: ChatHistoryItem[] = [];
+  let pendingQuestion = "";
+
+  messages.forEach((message) => {
+    if (message.role === "assistant") {
+      pendingQuestion = message.text;
+      return;
+    }
+
+    if (pendingQuestion) {
+      chatHistory.push({
+        ai_question: pendingQuestion,
+        user_answer: message.text,
+      });
+      pendingQuestion = "";
+    }
+  });
+
+  return chatHistory;
+}
 
 export default function FinancialStepPage({ data }: Props) {
   const router = useRouter();
 
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [inputValue, setInputValue] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [isSending, setIsSending] = useState(false);
+  const [isGeneratingBudget, setIsGeneratingBudget] = useState(false);
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -40,41 +74,99 @@ export default function FinancialStepPage({ data }: Props) {
     },
   ]);
 
-  const currentQuestion = data.questions[currentQuestionIndex];
-  const totalQuestions = data.questions.length;
-  const currentStep = currentQuestionIndex + 1;
+  const currentQuestion = data.questions[0];
+  const totalSectionSteps = sectionStepCounts[data.financialSection];
+  const progressStep = Math.min(
+    Math.max(Math.ceil((progress / 100) * totalSectionSteps), 1),
+    totalSectionSteps,
+  );
 
-  const progress = Math.round((currentStep / totalQuestions) * 100);
-
-  const handleSend = () => {
-    if (!inputValue.trim()) return;
+  const handleSend = async () => {
+    if (!inputValue.trim() || isSending) return;
 
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
       role: "user",
       text: inputValue,
     };
+    const nextMessages = [...messages, userMessage];
+    const requestBody: FinancialIntakeChatRequest = {
+      financial_section: data.financialSection,
+      chat_history: buildChatHistory(nextMessages),
+    };
 
-    const nextQuestionIndex = currentQuestionIndex + 1;
-    const nextQuestion = data.questions[nextQuestionIndex];
+    setMessages(nextMessages);
+    setInputValue("");
+    setIsSending(true);
 
-    if (nextQuestion) {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/financial_section/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const responseData = (await response.json()) as FinancialIntakeChatResponse;
+
+      if (!response.ok || !responseData.status) {
+        throw new Error("Financial intake API request failed.");
+      }
+
+      const assistantMessage: ChatMessage = {
+        id: `assistant-${Date.now()}`,
+        role: "assistant",
+        text: responseData.message.ai_question,
+      };
+
+      setProgress(responseData.message.progress);
+      setMessages((prev) => [...prev, assistantMessage]);
+
+      if (responseData.message.complete) {
+        saveFinancialSectionData(
+          data.financialSection,
+          responseData.message.data,
+        );
+
+        if (data.financialSection === "net_position") {
+          setIsGeneratingBudget(true);
+
+          const budgetResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/incomebudget-method`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(getFinancialIntakeData()),
+            },
+          );
+
+          const budgetData =
+            (await budgetResponse.json()) as BudgetMethodResponse;
+
+          if (!budgetResponse.ok || !budgetData.status) {
+            throw new Error("Budget method API request failed.");
+          }
+
+          saveBudgetFileUrl(budgetData.message);
+        }
+
+        router.push(data.nextPath);
+      }
+    } catch {
       setMessages((prev) => [
         ...prev,
-        userMessage,
         {
-          id: nextQuestion.id,
+          id: `assistant-error-${Date.now()}`,
           role: "assistant",
-          text: nextQuestion.question,
+          text: "Sorry, I could not save that answer right now. Please try again.",
         },
       ]);
-
-      setCurrentQuestionIndex(nextQuestionIndex);
-      setInputValue("");
-    } else {
-      setMessages((prev) => [...prev, userMessage]);
-      setInputValue("");
-      router.push(data.nextPath);
+    } finally {
+      setIsSending(false);
+      setIsGeneratingBudget(false);
     }
   };
 
@@ -88,7 +180,14 @@ export default function FinancialStepPage({ data }: Props) {
 
   return (
     <main className="h-screen overflow-hidden bg-[#777675] px-4 py-8">
-      <section className="mx-auto flex h-[calc(100vh-64px)] w-full max-w-5xl flex-col overflow-hidden bg-[#f3eee8] shadow-sm">
+      <section className="relative mx-auto flex h-[calc(100vh-64px)] w-full max-w-5xl flex-col overflow-hidden bg-[#f3eee8] shadow-sm">
+        {isGeneratingBudget && (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#f3eee8]/90 text-[#8B4A3A]">
+            <Loader2 className="mb-3 animate-spin" size={34} />
+            <p className="text-base font-medium">Generating your budget file...</p>
+          </div>
+        )}
+
         <div className="flex items-start justify-between px-6 pt-5">
           <div>
             <p className="text-base font-medium uppercase leading-[100%] text-[#8B4A3A]">
@@ -103,7 +202,7 @@ export default function FinancialStepPage({ data }: Props) {
             </p>
           </div>
 
-          <div className="flex gap-2">
+          {/* <div className="flex gap-2">
             <button
               onClick={() => router.push(data.nextPath)}
               className="bg-[#9b5948] w-24.75 h-12.75 text-base text-white hover:bg-[#874b3d]"
@@ -114,15 +213,15 @@ export default function FinancialStepPage({ data }: Props) {
             <button className="border w-24.75 h-12.75 border-[#d8ccc3] px-4 py-1.5 text-base text-[#9b5948]">
               Exit
             </button>
-          </div>
+          </div> */}
         </div>
 
         <div className="px-4">
           <ProgressBar
-            step={currentStep}
-            id={currentQuestion.id}
+            step={progressStep}
+            id={data.pageTitle}
             progress={progress}
-            totalSteps={totalQuestions}
+            totalSteps={totalSectionSteps}
           />
         </div>
 
@@ -139,7 +238,7 @@ export default function FinancialStepPage({ data }: Props) {
                   }`}
                 >
                   {!isUser && (
-                    <div className="mr-3 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#8f513f] text-[13px] font-medium text-white">
+                    <div className="mr-3 flex h-15 w-15 shrink-0 items-center justify-center rounded-full bg-[#8f513f] text-base font-normal text-[#2C2C2C] leading-1.7 px-4 py-3">
                       FBM
                     </div>
                   )}
@@ -161,7 +260,7 @@ export default function FinancialStepPage({ data }: Props) {
                       </div>
 
                       {isUser && (
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#e5dfd8] text-[13px] font-medium text-[#9b5948]">
+                        <div className="flex h-15 w-15 shrink-0 items-center justify-center rounded-full bg-[#DDD7D0] text-base font-normal text-[#8B4A3A]">
                           You
                         </div>
                       )}
@@ -194,14 +293,16 @@ export default function FinancialStepPage({ data }: Props) {
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleSend();
               }}
+              disabled={isSending}
               placeholder={
                 currentQuestion?.placeholder ?? "Type your answer here"
               }
-              className="h-10 flex-1 border border-[#d6c8bc] bg-[#fbf8f5] px-4 text-xs text-[#4b342d] outline-none placeholder:text-[#b9a89c] focus:border-[#9b5948]"
+              className="h-10 flex-1 border border-[#d6c8bc] bg-[#fbf8f5] px-4 text-base text-[#4b342d] outline-none placeholder:text-[#b9a89c] focus:border-[#9b5948]"
             />
 
             <button
               onClick={handleSend}
+              disabled={isSending}
               className="flex h-10 w-10 items-center justify-center bg-[#9b5948] text-white hover:bg-[#874b3d]"
             >
               <Send size={15} />

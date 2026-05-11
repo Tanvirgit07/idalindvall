@@ -4,13 +4,15 @@ import type { FinancialStepData } from "../types/financialIntake.types";
 export const step2Data: FinancialStepData = {
   pageStep: 2,
   pageTitle: "Essentials",
+  financialSection: "essentials",
   progress: 32,
   nextPath: FINANCIAL_INTAKE_ROUTES.step3,
 
   questions: [
     {
       id: "essential-1",
-      question: "What is your monthly housing cost?",
+      question:
+        "Welcome! I'm here to help you build your Freedom Budget. Let's start with your income what's your net monthly income after tax?",
       placeholder: "Example: Rent 15000",
     },
     {

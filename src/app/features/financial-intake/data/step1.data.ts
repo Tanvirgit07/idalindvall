@@ -4,6 +4,7 @@ import type { FinancialStepData } from "../types/financialIntake.types";
 export const step1Data: FinancialStepData = {
   pageStep: 1,
   pageTitle: "Income",
+  financialSection: "income",
   progress: 13,
   nextPath: FINANCIAL_INTAKE_ROUTES.step2,
 
@@ -11,7 +12,7 @@ export const step1Data: FinancialStepData = {
     {
       id: "income-1",
       question:
-        "Welcome! Let’s start with your income. What is your net monthly income after tax?",
+        "Welcome! I'm here to help you build your Freedom Budget. Let's start with your income what's your net monthly income after tax?",
       placeholder: "Example: 45000",
     },
     {

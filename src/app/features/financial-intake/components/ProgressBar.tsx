@@ -12,6 +12,8 @@ export default function ProgressBar({
   totalSteps = 6,
 }: Props) {
   const safeStep = Math.min(Math.max(step, 1), totalSteps);
+  const safeProgress = Math.min(Math.max(progress, 0), 100);
+  const filledStepCount = (safeProgress / 100) * totalSteps;
 
   return (
     <div className="w-full px-2 pb-3 pt-2">
@@ -21,7 +23,7 @@ export default function ProgressBar({
         </p>
 
         <p className="text-[14px] font-medium text-[#8B4A3A] leading-[100%]">
-          {progress}%
+          {safeProgress}%
         </p>
       </div>
 
@@ -32,14 +34,16 @@ export default function ProgressBar({
         }}
       >
         {Array.from({ length: totalSteps }).map((_, index) => {
-          const isActive = index < safeStep;
+          const fillWidth = Math.min(
+            Math.max(filledStepCount - index, 0),
+            1,
+          ) * 100;
 
           return (
             <div key={index} className="h-2 rounded-full bg-[#e3ddd5]">
               <div
-                className={`h-full rounded-full transition-all duration-500 ${
-                  isActive ? "w-full bg-[#d2b4aa]" : "w-0"
-                }`}
+                className="h-full rounded-full bg-[#d2b4aa] transition-all duration-500"
+                style={{ width: `${fillWidth}%` }}
               />
             </div>
           );

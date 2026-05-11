@@ -4,6 +4,7 @@ import type { FinancialStepData } from "../types/financialIntake.types";
 export const step3Data: FinancialStepData = {
   pageStep: 3,
   pageTitle: "Committed Money",
+  financialSection: "committed_money",
   progress: 52,
   nextPath: FINANCIAL_INTAKE_ROUTES.step4,
 
@@ -11,7 +12,7 @@ export const step3Data: FinancialStepData = {
     {
       id: "committed-1",
       question:
-        "Now let’s cover committed money. How much do you save every month?",
+        "Welcome! I'm here to help you build your Freedom Budget. Let's start with your income what's your net monthly income after tax?",
       placeholder: "Example: 5000",
     },
 
