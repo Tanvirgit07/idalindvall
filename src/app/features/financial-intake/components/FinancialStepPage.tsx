@@ -74,7 +74,6 @@ export default function FinancialStepPage({ data }: Props) {
     },
   ]);
 
-  const currentQuestion = data.questions[0];
   const totalSectionSteps = sectionStepCounts[data.financialSection];
   const progressStep = Math.min(
     Math.max(Math.ceil((progress / 100) * totalSectionSteps), 1),
@@ -100,16 +99,13 @@ export default function FinancialStepPage({ data }: Props) {
     setIsSending(true);
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/financial_section/chat`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
+      const response = await fetch("/api/financial-intake/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(requestBody),
+      });
 
       const responseData =
         (await response.json()) as FinancialIntakeChatResponse;
@@ -137,7 +133,7 @@ export default function FinancialStepPage({ data }: Props) {
           setIsGeneratingBudget(true);
 
           const budgetResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/incomebudget-method`,
+            "/api/financial-intake/budget-method",
             {
               method: "POST",
               headers: {

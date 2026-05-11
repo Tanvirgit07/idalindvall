@@ -2,15 +2,18 @@ import { NextResponse } from "next/server";
 import type { FinancialIntakeChatRequest } from "@/app/features/financial-intake/types/financialIntake.types";
 
 export async function POST(request: Request) {
-  const apiUrl = process.env.FINANCIAL_INTAKE_API_URL;
+  const apiUrl =
+    process.env.FINANCIAL_INTAKE_API_URL ??
+    `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/financial_section/chat`;
   const body = (await request.json()) as FinancialIntakeChatRequest;
 
-  if (!apiUrl) {
+  if (!process.env.FINANCIAL_INTAKE_API_URL && !process.env.NEXT_PUBLIC_BACKEND_API_URL) {
     return NextResponse.json(
       {
         status: false,
         status_code: 500,
-        message: "FINANCIAL_INTAKE_API_URL is missing.",
+        message:
+          "FINANCIAL_INTAKE_API_URL or NEXT_PUBLIC_BACKEND_API_URL is missing.",
       },
       { status: 500 },
     );
