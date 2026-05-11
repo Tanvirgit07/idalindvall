@@ -74,6 +74,7 @@ export default function FinancialStepPage({ data }: Props) {
     },
   ]);
 
+  const currentQuestion = data.questions[0];
   const totalSectionSteps = sectionStepCounts[data.financialSection];
   const progressStep = Math.min(
     Math.max(Math.ceil((progress / 100) * totalSectionSteps), 1),
