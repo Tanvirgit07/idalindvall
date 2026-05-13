@@ -58,6 +58,30 @@ function buildChatHistory(messages: ChatMessage[]): ChatHistoryItem[] {
   return chatHistory;
 }
 
+function TypingIndicator() {
+  return (
+    <div className="flex items-start justify-start">
+      <div className="mr-3 flex h-15 w-15 shrink-0 items-center justify-center rounded-full bg-[#8f513f] px-4 py-3 text-base font-normal leading-1.7 text-[#2C2C2C]">
+        FBM
+      </div>
+
+      <div className="flex flex-col items-start">
+        <div className="rounded-tr-3xl rounded-bl-3xl rounded-br-3xl bg-white px-5 py-4 text-[#2C2C2C]">
+          <div className="flex items-center gap-1.5" aria-label="FBM is typing">
+            <span className="h-2 w-2 animate-bounce rounded-full bg-[#8B4A3A] [animation-delay:-0.24s]" />
+            <span className="h-2 w-2 animate-bounce rounded-full bg-[#8B4A3A] [animation-delay:-0.12s]" />
+            <span className="h-2 w-2 animate-bounce rounded-full bg-[#8B4A3A]" />
+          </div>
+        </div>
+
+        <div className="mt-2 px-1 text-[14px] text-[#9d9d9d]">
+          Typing...
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function FinancialStepPage({ data }: Props) {
   const router = useRouter();
 
@@ -176,7 +200,7 @@ export default function FinancialStepPage({ data }: Props) {
       behavior: "smooth",
       block: "end",
     });
-  }, [messages]);
+  }, [messages, isSending]);
 
   return (
     <main className="h-screen overflow-hidden bg-[#EAE5DF] px-4 py-8">
@@ -273,6 +297,7 @@ export default function FinancialStepPage({ data }: Props) {
                 </div>
               );
             })}
+            {isSending && <TypingIndicator />}
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>

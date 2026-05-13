@@ -12,7 +12,7 @@ export const step2Data: FinancialStepData = {
     {
       id: "essential-1",
       question:
-        "Welcome! I'm here to help you build your Freedom Budget. Let's start with your income what's your net monthly income after tax?",
+        "Welcome! I'm here to help you build your Freedom Budget. Let's start with your essentials. What are your monthly essential living expenses?",
       placeholder: "Example: Rent 15000",
     },
     {

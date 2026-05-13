@@ -12,7 +12,7 @@ export const step5Data: FinancialStepData = {
     {
       id: "net-1",
       question:
-        "Welcome! I'm here to help you build your Freedom Budget. Let's start with your income what's your net monthly income after tax?",
+        "Welcome! I'm here to help you build your Freedom Budget. Finally, let's calculate your net position based on your income and expenses.",
       placeholder: "Example: savings 100000",
     },
 

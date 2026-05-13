@@ -12,7 +12,7 @@ export const step3Data: FinancialStepData = {
     {
       id: "committed-1",
       question:
-        "Welcome! I'm here to help you build your Freedom Budget. Let's start with your income what's your net monthly income after tax?",
+        "Welcome! I'm here to help you build your Freedom Budget. Now let's review your committed money. What fixed monthly commitments do you currently have?",
       placeholder: "Example: 5000",
     },
 

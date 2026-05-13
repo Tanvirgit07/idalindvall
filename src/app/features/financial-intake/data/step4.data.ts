@@ -12,7 +12,7 @@ export const step4Data: FinancialStepData = {
     {
       id: "irregular-1",
       question:
-        "Welcome! I'm here to help you build your Freedom Budget. Let's start with your income what's your net monthly income after tax?",
+        "Welcome! I'm here to help you build your Freedom Budget. Next, let's look at your irregular expenses. What non-monthly or occasional expenses do you usually have?",
       placeholder: "Example: yearly service 12000",
     },
 
