@@ -257,8 +257,11 @@ export default function FinancialStepPage({ data }: Props) {
                             ? "rounded-tl-3xl rounded-bl-3xl rounded-br-3xl bg-[#8B4A3A] text-white"
                             : "rounded-tr-3xl rounded-bl-3xl rounded-br-3xl bg-white text-[#2C2C2C]"
                         }`}
+                        dangerouslySetInnerHTML={
+                          isUser ? undefined : { __html: message.text }
+                        }
                       >
-                        {message.text}
+                        {isUser ? message.text : null}
                       </div>
 
                       {isUser && (
