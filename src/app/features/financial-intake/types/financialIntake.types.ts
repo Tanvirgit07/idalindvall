@@ -36,6 +36,9 @@ export type FinancialIntakeChatResponseMessage = {
   ai_question: string;
   progress: number;
   complete: boolean;
+  current_section?: FinancialSection;
+  current_progress?: number;
+  current_complete?: boolean;
   data?: unknown;
 };
 

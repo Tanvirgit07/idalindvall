@@ -7,13 +7,12 @@ import StepHeader from "./StepHeader";
 import ProgressBar from "./ProgressBar";
 
 const steps = [
-  { title: "Income", progress: 16 },
-  { title: "Essentials", progress: 32 },
-  { title: "Committed Money", progress: 50 },
-  { title: "Irregular Expenses", progress: 66 },
-  { title: "Net Position", progress: 83 },
-  { title: "Complete", progress: 100 },
-];
+  { title: "Income", section: "income", progress: 16 },
+  { title: "Essentials", section: "essentials", progress: 32 },
+  { title: "Committed Money", section: "committed_money", progress: 50 },
+  { title: "Irregular Expenses", section: "irregular_expense", progress: 66 },
+  { title: "Net Position", section: "net_position", progress: 83 },
+] as const;
 
 export type Message = {
   id: number;
@@ -67,10 +66,9 @@ export default function FinancialIntakeShell() {
 
         <div className="px-6">
           <ProgressBar
-            step={currentStep + 1}
-            id={steps[currentStep].title}
             progress={steps[currentStep].progress}
-            totalSteps={6}
+            currentSection={steps[currentStep].section}
+            currentProgress={steps[currentStep].progress}
           />
         </div>
 

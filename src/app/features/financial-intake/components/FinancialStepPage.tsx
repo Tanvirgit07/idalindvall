@@ -6,17 +6,15 @@ import { useRouter } from "next/navigation";
 import type {
   BudgetMethodResponse,
   ChatHistoryItem,
+  FinancialSection,
   FinancialIntakeChatRequest,
   FinancialIntakeChatResponse,
   FinancialStepData,
 } from "../types/financialIntake.types";
 import ProgressBar from "./ProgressBar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  getFinancialIntakeData,
-  saveBudgetFileUrl,
-  saveFinancialSectionData,
-} from "../utils/financialIntakeStorage";
+import { saveBudgetFileUrl } from "../utils/financialIntakeStorage";
+import { FINANCIAL_INTAKE_ROUTES } from "../constants/routes";
 
 type ChatMessage = {
   id: string;
@@ -26,14 +24,6 @@ type ChatMessage = {
 
 type Props = {
   data: FinancialStepData;
-};
-
-const sectionStepCounts = {
-  income: 3,
-  essentials: 11,
-  committed_money: 3,
-  irregular_expense: 2,
-  net_position: 10,
 };
 
 function buildChatHistory(messages: ChatMessage[]): ChatHistoryItem[] {
@@ -87,6 +77,10 @@ export default function FinancialStepPage({ data }: Props) {
 
   const [inputValue, setInputValue] = useState("");
   const [progress, setProgress] = useState(0);
+  const [currentProgress, setCurrentProgress] = useState(0);
+  const [currentSection, setCurrentSection] = useState<FinancialSection>(
+    data.financialSection,
+  );
   const [isSending, setIsSending] = useState(false);
   const [isGeneratingBudget, setIsGeneratingBudget] = useState(false);
 
@@ -98,12 +92,6 @@ export default function FinancialStepPage({ data }: Props) {
     },
   ]);
 
-  const totalSectionSteps = sectionStepCounts[data.financialSection];
-  const progressStep = Math.min(
-    Math.max(Math.ceil((progress / 100) * totalSectionSteps), 1),
-    totalSectionSteps,
-  );
-
   const handleSend = async () => {
     if (!inputValue.trim() || isSending) return;
 
@@ -114,7 +102,7 @@ export default function FinancialStepPage({ data }: Props) {
     };
     const nextMessages = [...messages, userMessage];
     const requestBody: FinancialIntakeChatRequest = {
-      financial_section: data.financialSection,
+      financial_section: currentSection,
       chat_history: buildChatHistory(nextMessages),
     };
 
@@ -145,39 +133,39 @@ export default function FinancialStepPage({ data }: Props) {
       };
 
       setProgress(responseData.message.progress);
+      setCurrentProgress(responseData.message.current_progress ?? 0);
+      setCurrentSection(
+        responseData.message.current_section ?? currentSection,
+      );
       setMessages((prev) => [...prev, assistantMessage]);
 
       if (responseData.message.complete) {
-        saveFinancialSectionData(
-          data.financialSection,
-          responseData.message.data,
-        );
-
-        if (data.financialSection === "net_position") {
-          setIsGeneratingBudget(true);
-
-          const budgetResponse = await fetch(
-            "/api/financial-intake/budget-method",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(getFinancialIntakeData()),
-            },
-          );
-
-          const budgetData =
-            (await budgetResponse.json()) as BudgetMethodResponse;
-
-          if (!budgetResponse.ok || !budgetData.status) {
-            throw new Error("Budget method API request failed.");
-          }
-
-          saveBudgetFileUrl(budgetData.message);
+        if (responseData.message.data === undefined) {
+          throw new Error("Financial intake completed without data.");
         }
 
-        router.push(data.nextPath);
+        setIsGeneratingBudget(true);
+
+        const budgetResponse = await fetch(
+          "/api/financial-intake/budget-method",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(responseData.message.data),
+          },
+        );
+
+        const budgetData =
+          (await budgetResponse.json()) as BudgetMethodResponse;
+
+        if (!budgetResponse.ok || !budgetData.status) {
+          throw new Error("Budget method API request failed.");
+        }
+
+        saveBudgetFileUrl(budgetData.message);
+        router.push(FINANCIAL_INTAKE_ROUTES.complete);
       }
     } catch {
       setMessages((prev) => [
@@ -232,10 +220,9 @@ export default function FinancialStepPage({ data }: Props) {
 
           <div className="px-4">
             <ProgressBar
-              step={progressStep}
-              id={data.pageTitle}
               progress={progress}
-              totalSteps={totalSectionSteps}
+              currentSection={currentSection}
+              currentProgress={currentProgress}
             />
           </div>
         </div>
