@@ -79,7 +79,7 @@ export default function FinancialIntakeShell() {
         </div>
 
         <div className="pb-2 text-center text-[11px] text-[#9d6b59]">
-          Structure below kicks — the FREEDOM BUDGET METHOD™ — UFYALL.COM
+          Structure before scale — the FREEDOM BUDGET METHOD™ — LILYVALL.COM
         </div>
       </div>
     </div>

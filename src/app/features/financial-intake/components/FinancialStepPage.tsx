@@ -315,7 +315,7 @@ export default function FinancialStepPage({ data }: Props) {
         </div>
 
         <p className="pb-2 text-center text-[10px] font-light italic text-[#9B918A]">
-          Structure below kicks — the FREEDOM BUDGET METHOD™ — UFYALL.COM
+          Structure before scale — the FREEDOM BUDGET METHOD™ — LILYVALL.COM
         </p>
       </section>
     </main>
